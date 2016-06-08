@@ -6,11 +6,7 @@ import random
 
 from time import sleep
 
-login_html = "<p>Your login information was correct. username:{{username}} password:{{password}}</p>"
-login_fail =  "<p>Login failed. username:{{username}} password:{{password}}</p>"
-
-int_ran = random.randint(1,1000000000)
-seckey = "qazwsxedcdsa" + str(int_ran)
+seckey = "qazwsxedcdsa" + str(random.randint(1, 1000000000))
 
 def create_key(str):
     str = str + seckey
@@ -32,24 +28,20 @@ def html_template(file='login.html'):
     html = f.read()
     return html
 
-#@get('/login') # or @route('/login')
 @route('/')
 @route('/login')
 def login():
     return html_template('login.html')
 
-#@post('/login') # or @route('/login', method='POST')
 @route('/login', method='POST')
 def do_login():
     username = request.forms.get('username')
     password = request.forms.get('password')
-    if check_login(username, password) == True:
+    if check_login(username, password):
         login_dict = {'username': username, 'password': password}
         if check_login(username, password):
             response.set_cookie("username", username)
             response.set_cookie("account", username, secret=create_key(username))
-            #return template(change(), **login_dict) 
-            #return template(login_html, **login_dict) 
             html = change()
             return template(change(), **login_dict) 
         else:
@@ -63,8 +55,7 @@ def restricted_area():
     username = request.get_cookie("username")
     username = request.get_cookie("account", secret=create_key(username))
     if username:
-        return template(change(), username=username) 
-        #return template("Hello {{name}}. Welcome back.", name=username)
+        return template(change(), username=username)
     else:
         return "You are not logged in. Access denied."
 
@@ -76,51 +67,48 @@ def do_change():
     username = request.get_cookie("username")
     username = request.get_cookie("account", secret=create_key(username))
     newpasswd = request.forms.get('newpasswd')
-    if username:
-        #return template("Hello {{name}}. Welcome back.", name=username)
-        if change_passwd(username, newpasswd) == True:
-            response.set_cookie("account", username, secret=int_ran)
-            return html_template('thanks_for_your_help.html')
+    a_newpasswd = request.forms.get('a_newpasswd')
+    if newpasswd == a_newpasswd:
+        if username:
+            if change_passwd(username, newpasswd) == True:
+                response.set_cookie("account", username, secret=random.randint(1, 1000000000))
+                return html_template('thanks_for_your_help.html')
+            else:
+                return "Please call Allen Wang (ext 5985)"
         else:
-            return "Please call Allen Wang (ext 5985)"
+            return "You are not logged in. Access denied."
     else:
-        return "You are not logged in. Access denied."
+        return template(change(), username=request.get_cookie("username"))
 
-#SYSTEM OPS
-
-def check_login(username, password):
-    if username == "root":
+def check_login(user, password):
+    import crypt
+    import spwd
+    try:
+        enc_pwd = spwd.getspnam(user)[1]
+        if enc_pwd in ["NP", "!", "", None]:
+            return False
+        if enc_pwd in ["LK", "*"]:
+            return False
+        if enc_pwd == "!!":
+            return False
+        if crypt.crypt(password, enc_pwd) == enc_pwd:
+            return True
+        else:
+            return False
+    except KeyError:
         return False
-
-    if password == "Welcome1":
-        return True
-    else:
-        return False
+    return False
 
 def change_passwd(username, password='Welcome1'):
-    from subprocess import Popen, PIPE, check_call
-    #check_call(['useradd', 'test'])
-    proc=Popen(['passwd', username],stdin=PIPE,stdout=PIPE,stderr=PIPE)
-    #proc.stdin.write('Welcome1\n')
-    proc.stdin.write(password+'\n')
-    sleep(1)
-    proc.stdin.write(password)
-    proc.stdin.flush()
-    stdout,stderr = proc.communicate()
-    #print username
-    #print password
-    print stdout
-    print stderr
-    return stdout,stderr
-    
-
-# TEST AREA
-@route('/tmp')
-def tmp():
-    return html_template('thanks_for_your_help.html')
+    import subprocess
+    p = subprocess.Popen(["chpasswd"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    (stdout, stderr) = p.communicate("%s:%s" % (username, password))
+    if p.returncode is not 0:
+        return False
+    return True
 
 def main():
-    run(host='10.206.102.202', port=5985)
+    run(host='0.0.0.0', port=5985)
 
 if __name__ == '__main__':
     main()

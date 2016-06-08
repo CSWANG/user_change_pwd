@@ -81,7 +81,9 @@ target/
 #tmp file
 *.tmp
 *.log
+tmp
 
 *_bk
 *.retry
 db
+.bundle

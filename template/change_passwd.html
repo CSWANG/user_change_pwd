@@ -1,5 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<script>
+</script>
+</head>
+
+<body>
 <form action="/change" method="post">
-    User Name : {{username}} <br>
-    Please enter new password: <input name="newpasswd" type="password" /> <br>
-    <input value="newpasswd" type="submit" /> <br>
+	<table border="0">
+	<tr>
+	<td>User Name : {{username}}</td>
+	</tr>
+	<tr>
+ 	<td>Enter new password:</td>
+ 	<td><input name="newpasswd" type="password" /></td>
+	</tr>
+	<tr>
+ 	<td>again:</td>
+	<td><input name="a_newpasswd" type="password" /></td>
+	</table>
+    <input value="change_1" type="submit" /> <br>
 </form>
+
+</body>
+</html>

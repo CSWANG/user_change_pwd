@@ -1,0 +1,75 @@
+- name: ubuntu default setting
+  hosts: all
+  user: vagrant
+  sudo: true
+#  vars_files:
+#    - vars/extra_vars.yml
+  vars:
+    ubuntu_package_archive: "http://free.nchc.org.tw/ubuntu"
+
+  tasks:
+
+#- name: change source.list
+#shell: sed -i 's/archive.ubuntu.com/free.nchc.org.tw/g' /etc/apt/sources.list
+#
+#    - name: include default step variables
+#      include_vars: vars/extra_vars.yml
+
+    - name: override package archive
+      replace: dest=/etc/apt/sources.list regexp="http://archive.ubuntu.com/ubuntu" replace={{ubuntu_package_archive}}
+      when: ubuntu_package_archive != ""
+
+    - name: apt-get update
+      apt: update_cache=yes
+
+    - name: apt-get upgrade
+      apt: upgrade=dist
+
+    - name: Get aptitude for upgrade
+      apt: pkg=aptitude state=present
+
+    - name: Safe system upgrade via aptitude
+      apt: upgrade=safe
+
+    - name: install base packages
+      apt: pkg={{item}} state=present update_cache=yes cache_valid_time=604800
+      with_items:
+        - tree
+        - git
+        - wget
+        - lftp
+        - vim
+        - telnet
+        - curl
+        - python-setuptools
+        - python-pip
+        - ipython
+        - python-virtualenv
+        - libreadline-dev
+        - libconfig-dev
+        - libssl-dev
+        - lua5.2
+        - liblua5.2-dev
+        - libevent-dev
+        - libjansson-dev
+        - libpython-dev
+        - make
+        - sqlite3
+        - bzip2
+        - build-essential
+        - zlib1g-dev
+        - libbz2-dev
+        - libreadline-dev
+        - libsqlite3-dev
+        - llvm
+        - zsh
+        - sysv-rc-conf
+        - aptitude
+        - tmux
+        - mtr
+        - traceroute
+        - sysstat
+        - htop
+        - autossh
+        - libcups2-dev  
+        - libsmbclient-dev
