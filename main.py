@@ -47,7 +47,7 @@ def do_login():
         else:
             return restricted_area()
     else:
-        return restricted_area()
+        return html_template('login.html')
 
 @route('/change')
 @route('/restricted')
@@ -68,7 +68,7 @@ def do_change():
     username = request.get_cookie("account", secret=create_key(username))
     newpasswd = request.forms.get('newpasswd')
     a_newpasswd = request.forms.get('a_newpasswd')
-    if newpasswd == a_newpasswd:
+    if newpasswd == a_newpasswd and len(newpasswd) > 9 :
         if username:
             if change_passwd(username, newpasswd) == True:
                 response.set_cookie("account", username, secret=random.randint(1, 1000000000))
