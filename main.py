@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from bottle_single import get, post, request, route, run, template, response
+from bottle import get, post, request, route, run, template, response
 
 import random
 
@@ -37,13 +37,13 @@ def login():
 def do_login():
     username = request.forms.get('username')
     password = request.forms.get('password')
-    if check_login(username, password):
+    if check_login(username, password) and username != 'root' :
         login_dict = {'username': username, 'password': password}
         if check_login(username, password):
             response.set_cookie("username", username)
             response.set_cookie("account", username, secret=create_key(username))
             html = change()
-            return template(change(), **login_dict) 
+            return template(change(), **login_dict)
         else:
             return restricted_area()
     else:
@@ -68,7 +68,7 @@ def do_change():
     username = request.get_cookie("account", secret=create_key(username))
     newpasswd = request.forms.get('newpasswd')
     a_newpasswd = request.forms.get('a_newpasswd')
-    if newpasswd == a_newpasswd and len(newpasswd) > 9 :
+    if newpasswd == a_newpasswd and len(newpasswd) > 9:
         if username:
             if change_passwd(username, newpasswd) == True:
                 response.set_cookie("account", username, secret=random.randint(1, 1000000000))
